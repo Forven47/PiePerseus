@@ -1,0 +1,11 @@
+.vscode
+.idea
+__pycache__
+com.YoStarEN.AzurLane*
+Perseus
+*.keystore
+*.obb
+apk_build
+/PerseusLib/src/libs
+/PerseusLib/src/obj
+*.iml
