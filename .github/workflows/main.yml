@@ -3,6 +3,9 @@ name: PiePerseus Build
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -122,4 +125,4 @@ jobs:
           draft: true
           title: "Perseus Release v${{ env.PERSEUS_VERSION }}"
           files: |
-            build/*.apk
+            apk_build/*.apk
