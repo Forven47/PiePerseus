@@ -37,7 +37,7 @@ BEGIN { done = 0 }
     # print the original onCreate line
     print $0
     # insert the library load + init invocation immediately after
-    print "    const-string v0, \"JMBQ\""
+    print "    const-string v0, \"Perseus\""
     print ""
     print "    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V"
     print ""
