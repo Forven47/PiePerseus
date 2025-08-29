@@ -116,7 +116,7 @@ jobs:
             echo "Built apk: $apkfile"
             echo "PERSEUS_VERSION=$version" >> $GITHUB_ENV
             pwd
-            ls -las ../PerseusLib/src/libs
+            ls -las PerseusLib/src/libs
           fi
 
       - name: Create Draft Release with APK(s)
