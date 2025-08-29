@@ -1,0 +1,32 @@
+name: Perseus Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3.3.0
+        with:
+          java-version: "17"
+          distribution: "adopt"
+
+      - name: Build Perseus APK
+        run: ./patch_perseus.sh
+
+      - name: Zipalign and Sign Android release
+        run: ./zipalign_sign.sh
+                    
+      - uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          draft: true
+          title: "Perseus Release v${{ env.PERSEUS_VERSION }}"
+          files: |
+            build/*.apk
