@@ -95,12 +95,6 @@ def build_perseus_lib(do_clean=False):
 
 
 def extract_from_packages():
-    '''
-    Look for archives in ./packages and extract them into the current directory (apk_build).
-    Supports .zip (including split zip parts) and .7z. Uses bin/7zz if present, otherwise falls
-    back to unzip.
-    The function expects that after extraction a file named {pkg}.apk will exist.
-    '''
     if skip and os.path.isfile(f'{pkg}.apk'):
         logging.info(f'{pkg}.apk already exists, skipping')
         return
