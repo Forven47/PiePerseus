@@ -192,7 +192,7 @@ def rebuild():
 
         shutil.move(newpkg, newzip)
 
-        libs = [f'{pkg}/lib/{arch}/libPerseus.so' for arch in ['arm64-v8a', 'armeabi-v7a', 'x86']]
+        libs = [f'{pkg}/lib/{arch}/libPerseus.so' for arch in ['arm64-v8a', 'x86_64', 'x86']]
         libs_renamed = [lib.removeprefix(f'{pkg}/') for lib in libs]
 
         proc1 = run([executable_path('7zz'), '-y', 'd', newzip] + libs_renamed, stdout=PIPE)
