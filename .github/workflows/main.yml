@@ -126,3 +126,4 @@ jobs:
           title: "Perseus Release v${{ env.PERSEUS_VERSION }}"
           files: |
             apk_build/*.patched.apk
+            apk_build/perseus_libs.zip
