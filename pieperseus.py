@@ -15,8 +15,6 @@ logging.basicConfig(
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.DEBUG)
 
-# NOTE: set this to the package name that corresponds to the apk inside your archives
-# e.g. 'com.bilibili.AzurLane' if the extracted file is com.bilibili.AzurLane.apk
 pkg = 'com.bilibili.AzurLane'
 pkg_version = '0'
 rootdir = os.getcwd()
