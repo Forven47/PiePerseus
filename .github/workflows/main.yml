@@ -96,8 +96,8 @@ jobs:
           python3 -m pip install --upgrade pip
           # If your script requires any pip packages you can install them here:
           # pip3 install <package>
-          # Run perseus.py from repository root (script expects to be run from repo root)
-          python3 perseus.py --no-skip
+          # Run pieperseus.py from repository root (script expects to be run from repo root)
+          python3 pieperseus.py --no-skip
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
           JAVA_HOME: ${{ env.JAVA_HOME }}
