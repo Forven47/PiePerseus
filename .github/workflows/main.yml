@@ -1,4 +1,4 @@
-name: Perseus Build
+name: PiePerseus Build
 
 on:
   workflow_dispatch:
