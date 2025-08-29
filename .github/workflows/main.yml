@@ -104,9 +104,9 @@ jobs:
 
       - name: Set PERSEUS_VERSION env from built apk filename
         run: |
-          apkfile=$(ls build/*.patched.apk 2>/dev/null | head -n1 || true)
+          apkfile=$(ls apk_build/*.patched.apk 2>/dev/null | head -n1 || true)
           if [ -z "$apkfile" ]; then
-            echo "No apk found in build/ - skipping PERSEUS_VERSION set"
+            echo "No apk found in apk_build/ - skipping PERSEUS_VERSION set"
             echo "PERSEUS_VERSION=unknown" >> $GITHUB_ENV
           else
             version=$(basename "$apkfile" | sed -E 's/.*-([0-9A-Za-z_.]+)\.patched\.apk/\1/')
