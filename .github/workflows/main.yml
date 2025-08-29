@@ -125,4 +125,4 @@ jobs:
           draft: true
           title: "Perseus Release v${{ env.PERSEUS_VERSION }}"
           files: |
-            apk_build/*.apk
+            apk_build/*.patched.apk
