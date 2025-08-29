@@ -115,6 +115,7 @@ jobs:
             version=$(basename "$apkfile" | sed -E 's/.*-([0-9A-Za-z_.]+)\.patched\.apk/\1/')
             echo "Built apk: $apkfile"
             echo "PERSEUS_VERSION=$version" >> $GITHUB_ENV
+            ls -las ../PerseusLib/src/libs
           fi
 
       - name: Create Draft Release with APK(s)
