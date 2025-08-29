@@ -6,9 +6,12 @@ import shutil
 import time
 import zipfile
 import itertools
-from subprocess import Popen, PIPE, STDOUT, run
 import logging
 import sys
+import re
+import datetime
+from subprocess import Popen, PIPE, STDOUT, run
+
 
 logging.basicConfig(
     format='%(asctime)s,%(msecs)03d %(levelname)-8s [%(filename)s:%(funcName)s:%(lineno)d] - %(message)s',
@@ -20,7 +23,6 @@ pkg_version = '0'
 rootdir = os.getcwd()
 
 skip = False
-clean = False
 quick_rebuild = False
 
 
@@ -52,16 +54,39 @@ def bbox(cmd):
 
 
 def get_version():
-    logging.info(f'fetching {pkg} versions')
     global pkg_version
-    line = ''
-    with Popen([executable_path('apkeep'), '-a', pkg, '-l', 'unused.txt'],
-               stdout=PIPE, stderr=STDOUT, text=True) as proc:
-        for outputline in proc.stdout:
-            line = outputline
-    v = line.split(' ')[-1].strip()
-    logging.info(f'found {pkg} version {v}')
-    pkg_version = v
+    logging.info('getting version from apk file in current directory')
+
+    # prefer exact match
+    candidates = sorted(glob.glob(f'{pkg}*.apk') + glob.glob('*.apk'))
+    if not candidates:
+        logging.warning('no apk found to extract version; falling back to timestamp')
+        pkg_version = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
+        return
+
+    apk = candidates[0]
+    logging.info(f'Found apk for version extraction: {apk}')
+
+    # try using aapt if available
+    try:
+        proc = run(['aapt', 'dump', 'badging', apk], stdout=PIPE, stderr=STDOUT, text=True)
+        if proc.returncode == 0:
+            m = re.search(r"versionName='([^']+)'", proc.stdout)
+            if m:
+                pkg_version = m.group(1)
+                logging.info(f'Extracted versionName via aapt: {pkg_version}')
+                return
+    except FileNotFoundError:
+        logging.debug('aapt not found')
+
+    # as last resort, use file mtime
+    try:
+        mtime = os.path.getmtime(apk)
+        pkg_version = datetime.datetime.utcfromtimestamp(mtime).strftime('%Y%m%d%H%M%S')
+        logging.warning(f'Using timestamp fallback version: {pkg_version}')
+    except Exception:
+        pkg_version = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
+        logging.warning(f'Using UTC-now fallback version: {pkg_version}')
 
 
 def build_perseus_lib(do_clean=False):
@@ -205,8 +230,27 @@ def sign_apk():
     os.remove(f'{f}.idsig')
 
 
+def compress_libs():
+    logging.info('compressing Perseus libs into apk_build')
+    libs_dir = os.path.join(rootdir, 'PerseusLib', 'src', 'libs')
+    out_zip = os.path.join(os.getcwd(), 'perseus_libs.zip')
+
+    if not os.path.isdir(libs_dir):
+        logging.warning(f'Perseus libs dir not found: {libs_dir}, skipping compress')
+        return
+
+    with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for root, _, files in os.walk(libs_dir):
+            for f in files:
+                full = os.path.join(root, f)
+                arcname = os.path.relpath(full, libs_dir)
+                zf.write(full, arcname)
+
+    logging.info(f'Written libs archive: {out_zip}')
+
+
 def main():
-    global skip, clean, quick_rebuild
+    global skip, quick_rebuild
 
     parser = argparse.ArgumentParser(
         prog='perseus apk builder',
@@ -220,39 +264,26 @@ def main():
                         help='rebuild apk by replacing libs in the apk instead of using apktool (saves 40s)',
                         default=True,
                         action=argparse.BooleanOptionalAction)
-    parser.add_argument('--clean',
-                        help='delete built apk, decompiled sources, compiled perseus libs and xapk',
-                        default=False,
-                        action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     skip = args.skip
-    clean = args.clean
     quick_rebuild = args.quick_rebuild
 
-    if clean:
-        logging.info('cleaning')
-        for f in glob.glob('*.xapk'):
-            os.remove(path=f)
-        if os.path.isdir('apk_build'):
-            shutil.rmtree('apk_build')
-        build_perseus_lib(do_clean=True)
+    start = time.time()
+    build_perseus_lib()
+    mkcd('apk_build')
+    extract_from_packages()
+    get_version()
+    decompile_apk()
+    copy_perseus_libs()
+    patch()
+    rebuild()
+    sign_apk()
+    compress_libs()
+    end = time.time()
 
-    else:
-        start = time.time()
-        get_version()
-        build_perseus_lib()
-        mkcd('apk_build')
-        extract_from_packages()
-        decompile_apk()
-        copy_perseus_libs()
-        patch()
-        rebuild()
-        sign_apk()
-        end = time.time()
-
-        logging.info(f"built apk in {os.path.join(rootdir, 'apk_build', f'{pkg}-{pkg_version}.patched.apk')}")
-        logging.info(f"done in {round(end - start, 2)} seconds")
+    logging.info(f"built apk in {os.path.join(rootdir, 'apk_build', f'{pkg}-{pkg_version}.patched.apk')}")
+    logging.info(f"done in {round(end - start, 2)} seconds")
 
 
 if __name__ == '__main__':
