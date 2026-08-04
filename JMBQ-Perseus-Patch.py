@@ -94,7 +94,7 @@ def get_version():
 
 def download_jmbq_perseus_lib():
     global mod_version
-    repo_owner = "JMBQ"
+    repo_owner = "JMBQ01"
     repo_name = "azurlane"
     asset_pattern = "MOD_MENU_"
     extract_dir = Path("JMBQ-PerseusLib")
